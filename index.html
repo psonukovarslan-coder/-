@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Код-редактор в TG</title>
+    <title>Редактор кода</title>
 
     <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
 
+    <!-- CodeMirror -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/dracula.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/monokai.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/eclipse.min.css" />
 
+    <!-- Языки -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/python/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/htmlmixed/htmlmixed.min.js"></script>
@@ -25,67 +26,253 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/rust/rust.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/shell/shell.min.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/search.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/searchcursor.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/dialog/dialog.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/dialog/dialog.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/matchbrackets.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/edit/closebrackets.min.js"></script>
-
     <style>
+        :root {
+            --bg: #1e1e1e;
+            --toolbar: #252526;
+            --text: #e0e0e0;
+            --button: #3c3c3c;
+            --button-hover: #4c4c4c;
+            --accent: #0a84ff;
+            --border: #3c3c3c;
+            --shadow: rgba(0,0,0,0.3);
+            --radius: 10px;
+            --transition: all 0.25s ease;
+        }
+
+        .theme-light {
+            --bg: #ffffff;
+            --toolbar: #f5f5f5;
+            --text: #1e1e1e;
+            --button: #e5e5e5;
+            --button-hover: #d5d5d5;
+            --accent: #0078d4;
+            --border: #cccccc;
+            --shadow: rgba(0,0,0,0.1);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: #1e1e1e; color: #ddd; height: 100vh; display: flex; flex-direction: column; }
-        .toolbar { background: #252526; padding: 8px; border-bottom: 1px solid #3c3c3c; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; z-index: 10; }
-        .toolbar button, .toolbar select { background: #3c3c3c; color: #ccc; border: none; padding: 6px 10px; border-radius: 4px; font-size: 13px; cursor: pointer; }
-        .toolbar button:hover, .toolbar select:hover { background: #4c4c4c; }
-        .toolbar .separator { width: 1px; background: #555; margin: 0 8px; }
-        .CodeMirror { flex: 1; height: auto !important; }
-        .statusbar { background: #007acc; color: white; padding: 4px 10px; font-size: 12px; display: flex; justify-content: space-between; }
-        .theme-light .toolbar { background: #f3f3f3; }
-        .theme-light .toolbar button, .theme-light .toolbar select { background: #e0e0e0; color: #333; }
-        .theme-light { background: #ffffff; color: #333; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--toolbar);
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: 0 2px 8px var(--shadow);
+            z-index: 10;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--accent);
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: var(--button);
+            color: var(--text);
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: var(--transition);
+            min-width: 36px;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            background: var(--button-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .select-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        select {
+            background: var(--button);
+            color: var(--text);
+            border: none;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        select:hover {
+            background: var(--button-hover);
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: var(--accent);
+            font-size: 14px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .CodeMirror {
+            flex: 1;
+            height: auto !important;
+            font-size: 14px;
+            border-radius: 0 0 var(--radius) var(--radius);
+            box-shadow: inset 0 1px 3px var(--shadow);
+        }
+
+        .statusbar {
+            background: var(--toolbar);
+            color: var(--text);
+            padding: 6px 16px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border);
+            font-weight: 500;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-item svg {
+            width: 14px;
+            height: 14px;
+            fill: var(--accent);
+        }
+
+        @media (max-width: 600px) {
+            .header {
+                padding: 10px;
+                gap: 8px;
+            }
+            .btn, select {
+                padding: 6px 10px;
+                font-size: 12px;
+            }
+            .file-name {
+                font-size: 13px;
+                max-width: 120px;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="toolbar">
-        <button id="newFile">Новый</button>
-        <button id="saveBtn">Сохранить</button>
-        <button id="copyBtn">Копировать</button>
-        <button id="downloadBtn">Скачать</button>
-        <div class="separator"></div>
-        <select id="langSelect">
-            <option value="javascript">JavaScript</option>
-            <option value="python">Python</option>
-            <option value="htmlmixed">HTML</option>
-            <option value="css">CSS</option>
-            <option value="java">Java</option>
-            <option value="cpp">C++</option>
-            <option value="csharp">C#</option>
-            <option value="php">PHP</option>
-            <option value="sql">SQL</option>
-            <option value="go">Go</option>
-            <option value="rust">Rust</option>
-            <option value="shell">Shell</option>
-            <option value="xml">XML</option>
-        </select>
-        <select id="themeSelect">
-            <option value="dracula">Dracula</option>
-            <option value="monokai">Monokai</option>
-            <option value="eclipse">Eclipse (светлая)</option>
-        </select>
-        <div class="separator"></div>
-        <button id="searchBtn">Поиск (Ctrl+F)</button>
-        <button id="undoBtn">Отмена</button>
-        <button id="redoBtn">Повтор</button>
+    <div class="header">
+        <div class="logo">
+            <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+            <span>Редактор</span>
+        </div>
+
+        <div class="actions">
+            <button class="btn" id="newFile" title="Новый файл">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </button>
+            <button class="btn" id="saveBtn" title="Сохранить">
+                <svg viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+            </button>
+            <button class="btn" id="copyBtn" title="Копировать">
+                <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+            </button>
+            <button class="btn" id="downloadBtn" title="Скачать">
+                <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            </button>
+
+            <div class="select-group">
+                <select id="langSelect">
+                    <option value="javascript">JavaScript</option>
+                    <option value="python">Python</option>
+                    <option value="htmlmixed">HTML</option>
+                    <option value="css">CSS</option>
+                    <option value="java">Java</option>
+                    <option value="cpp">C++</option>
+                    <option value="csharp">C#</option>
+                    <option value="php">PHP</option>
+                    <option value="sql">SQL</option>
+                    <option value="go">Go</option>
+                    <option value="rust">Rust</option>
+                    <option value="shell">Shell</option>
+                    <option value="xml">XML</option>
+                </select>
+                <select id="themeSelect">
+                    <option value="dracula">Dracula</option>
+                    <option value="monokai">Monokai</option>
+                    <option value="eclipse">Светлая</option>
+                </select>
+            </div>
+
+            <div class="file-name" id="currentFileName"></div>
+        </div>
     </div>
 
     <textarea id="codeEditor"></textarea>
 
     <div class="statusbar">
-        <span id="statusLang">Язык: JavaScript</span>
-        <span id="statusLines">Строк: 0</span>
-        <span id="statusChars">Симв.: 0</span>
+        <div class="status-item">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            <span id="statusLang">JavaScript</span>
+        </div>
+        <div class="status-item">
+            <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+            <span id="statusLines">0 строк</span>
+        </div>
+        <div class="status-item">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            <span id="statusChars">0 симв.</span>
+        </div>
     </div>
 
     <script>
@@ -99,7 +286,6 @@
             theme: "dracula",
             indentUnit: 4,
             tabSize: 4,
-            indentWithTabs: false,
             autoCloseBrackets: true,
             matchBrackets: true,
             lineWrapping: false,
@@ -129,17 +315,14 @@
 
         const langSelect = document.getElementById("langSelect");
         const themeSelect = document.getElementById("themeSelect");
-        const statusLang = document.getElementById("statusLang");
-        const statusLines = document.getElementById("statusLines");
-        const statusChars = document.getElementById("statusChars");
 
         function updateStatus() {
             const lines = editor.lineCount();
             const chars = editor.getValue().length;
             const lang = langSelect.value;
-            statusLang.textContent = `Язык: ${langMap[lang].name}`;
-            statusLines.textContent = `Строк: ${lines}`;
-            statusChars.textContent = `Симв.: ${chars}`;
+            document.getElementById("statusLang").textContent = langMap[lang].name;
+            document.getElementById("statusLines").textContent = `${lines} строк`;
+            document.getElementById("statusChars").textContent = `${chars} симв.`;
         }
         editor.on("change", updateStatus);
 
@@ -156,7 +339,10 @@
         });
 
         document.getElementById("newFile").addEventListener("click", () => {
-            if (confirm("Создать новый файл?")) editor.setValue("");
+            if (confirm("Создать новый файл?")) {
+                editor.setValue("");
+                clearFileName();
+            }
         });
 
         document.getElementById("copyBtn").addEventListener("click", () => {
@@ -168,45 +354,56 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `code.${getFileExtension()}`;
+            a.download = getCurrentFileName();
             a.click();
             URL.revokeObjectURL(url);
         });
 
-        function getFileExtension() {
-            const exts = { javascript: "js", python: "py", htmlmixed: "html", css: "css", java: "java", cpp: "cpp", csharp: "cs", php: "php", sql: "sql", go: "go", rust: "rs", shell: "sh", xml: "xml" };
-            return exts[langSelect.value] || "txt";
+        function getCurrentFileName() {
+            const name = document.getElementById("currentFileName").textContent;
+            const ext = { javascript: "js", python: "py", htmlmixed: "html", css: "css" }[langSelect.value] || "txt";
+            return name || `code.${ext}`;
         }
 
         function saveCode() {
-            const data = { code: editor.getValue(), language: langSelect.value, filename: `code.${getFileExtension()}` };
+            const data = { 
+                code: editor.getValue(), 
+                language: langSelect.value, 
+                filename: getCurrentFileName()
+            };
             tg.sendData(JSON.stringify(data));
             tg.close();
         }
         document.getElementById("saveBtn").addEventListener("click", saveCode);
 
-        document.getElementById("undoBtn").addEventListener("click", () => editor.undo());
-        document.getElementById("redoBtn").addEventListener("click", () => editor.redo());
-        document.getElementById("searchBtn").addEventListener("click", () => CodeMirror.commands.findPersistent(editor));
-
-        // === ОБРАБОТКА start_param ===
-        document.addEventListener("DOMContentLoaded", () => {
+        // === start_param ===
+        (function loadFromStartParam() {
             const initData = tg.initDataUnsafe;
-            if (initData && initData.start_param) {
-                try {
-                    const decoded = decodeURIComponent(initData.start_param);
-                    const param = JSON.parse(decoded);
-                    if (param.code) editor.setValue(param.code);
-                    if (param.lang && langMap[param.lang]) {
-                        langSelect.value = param.lang;
-                        editor.setOption("mode", langMap[param.lang].mode);
-                    }
-                    updateStatus();
-                } catch (e) {
-                    console.error("Ошибка start_param:", e);
+            if (!initData || !initData.start_param) return;
+
+            try {
+                const decoded = decodeURIComponent(initData.start_param);
+                const param = JSON.parse(decoded);
+
+                if (param.code !== undefined) editor.setValue(param.code);
+                if (param.lang && langMap[param.lang]) {
+                    langSelect.value = param.lang;
+                    editor.setOption("mode", langMap[param.lang].mode);
                 }
+                if (param.filename) {
+                    document.getElementById("currentFileName").textContent = param.filename;
+                    document.querySelector("title").textContent = param.filename;
+                }
+                updateStatus();
+            } catch (e) {
+                console.error("Ошибка:", e);
             }
-        });
+        })();
+
+        function clearFileName() {
+            document.getElementById("currentFileName").textContent = "";
+            document.querySelector("title").textContent = "Редактор кода";
+        }
 
         updateStatus();
     </script>
