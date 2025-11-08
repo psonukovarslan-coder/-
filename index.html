@@ -5,24 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Код-редактор в TG</title>
 
-    <!-- Telegram Web App -->
     <script src="https://telegram.org/js/telegram-web-app.js?59"></script>
 
-    <!-- CodeMirror 6 (современная версия) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
 
-    <!-- Темы -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/dracula.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/monokai.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/eclipse.min.css" />
 
-    <!-- Режимы (языки) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/javascript/javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/python/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/htmlmixed/htmlmixed.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/css/css.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/xml/xml.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/clike/clike.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/php/php.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/sql/sql.min.js"></script>
@@ -30,7 +25,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/rust/rust.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/mode/shell/shell.min.js"></script>
 
-    <!-- Дополнения: поиск, автодополнение -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/search.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/search/searchcursor.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/addon/dialog/dialog.min.js"></script>
@@ -40,62 +34,13 @@
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #1e1e1e;
-            color: #ddd;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Панель управления */
-        .toolbar {
-            background: #252526;
-            padding: 8px;
-            border-bottom: 1px solid #3c3c3c;
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-            z-index: 10;
-        }
-        .toolbar button, .toolbar select {
-            background: #3c3c3c;
-            color: #ccc;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 13px;
-            cursor: pointer;
-        }
-        .toolbar button:hover, .toolbar select:hover {
-            background: #4c4c4c;
-        }
-        .toolbar .separator {
-            width: 1px;
-            background: #555;
-            margin: 0 8px;
-        }
-
-        /* Редактор */
-        .CodeMirror {
-            flex: 1;
-            height: auto !important;
-        }
-
-        /* Статус-бар */
-        .statusbar {
-            background: #007acc;
-            color: white;
-            padding: 4px 10px;
-            font-size: 12px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        /* Темы */
+        body { font-family: 'Segoe UI', sans-serif; background: #1e1e1e; color: #ddd; height: 100vh; display: flex; flex-direction: column; }
+        .toolbar { background: #252526; padding: 8px; border-bottom: 1px solid #3c3c3c; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; z-index: 10; }
+        .toolbar button, .toolbar select { background: #3c3c3c; color: #ccc; border: none; padding: 6px 10px; border-radius: 4px; font-size: 13px; cursor: pointer; }
+        .toolbar button:hover, .toolbar select:hover { background: #4c4c4c; }
+        .toolbar .separator { width: 1px; background: #555; margin: 0 8px; }
+        .CodeMirror { flex: 1; height: auto !important; }
+        .statusbar { background: #007acc; color: white; padding: 4px 10px; font-size: 12px; display: flex; justify-content: space-between; }
         .theme-light .toolbar { background: #f3f3f3; }
         .theme-light .toolbar button, .theme-light .toolbar select { background: #e0e0e0; color: #333; }
         .theme-light { background: #ffffff; color: #333; }
@@ -103,23 +48,20 @@
 </head>
 <body>
 
-    <!-- Панель инструментов -->
     <div class="toolbar">
         <button id="newFile">Новый</button>
         <button id="saveBtn">Сохранить</button>
         <button id="copyBtn">Копировать</button>
         <button id="downloadBtn">Скачать</button>
-
         <div class="separator"></div>
-
         <select id="langSelect">
             <option value="javascript">JavaScript</option>
             <option value="python">Python</option>
             <option value="htmlmixed">HTML</option>
             <option value="css">CSS</option>
-            <option value="java">Java (CLike)</option>
-            <option value="cpp">C++ (CLike)</option>
-            <option value="csharp">C# (CLike)</option>
+            <option value="java">Java</option>
+            <option value="cpp">C++</option>
+            <option value="csharp">C#</option>
             <option value="php">PHP</option>
             <option value="sql">SQL</option>
             <option value="go">Go</option>
@@ -127,24 +69,19 @@
             <option value="shell">Shell</option>
             <option value="xml">XML</option>
         </select>
-
         <select id="themeSelect">
-            <option value="dracula">Dracula (тёмная)</option>
+            <option value="dracula">Dracula</option>
             <option value="monokai">Monokai</option>
             <option value="eclipse">Eclipse (светлая)</option>
         </select>
-
         <div class="separator"></div>
-
         <button id="searchBtn">Поиск (Ctrl+F)</button>
         <button id="undoBtn">Отмена</button>
         <button id="redoBtn">Повтор</button>
     </div>
 
-    <!-- Редактор -->
     <textarea id="codeEditor"></textarea>
 
-    <!-- Статус-бар -->
     <div class="statusbar">
         <span id="statusLang">Язык: JavaScript</span>
         <span id="statusLines">Строк: 0</span>
@@ -152,13 +89,11 @@
     </div>
 
     <script>
-        // Telegram WebApp
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        // CodeMirror
-        let editor = CodeMirror.fromTextArea(document.getElementById("codeEditor"), {
+        const editor = CodeMirror.fromTextArea(document.getElementById("codeEditor"), {
             lineNumbers: true,
             mode: "javascript",
             theme: "dracula",
@@ -172,12 +107,10 @@
                 "Ctrl-F": "findPersistent",
                 "Ctrl-S": () => saveCode(),
                 "Ctrl-Z": () => editor.undo(),
-                "Ctrl-Y": () => editor.redo(),
-                "Ctrl-Space": "autocomplete"
+                "Ctrl-Y": () => editor.redo()
             }
         });
 
-        // Языки
         const langMap = {
             javascript: { name: "JavaScript", mode: "javascript" },
             python: { name: "Python", mode: "python" },
@@ -194,14 +127,12 @@
             xml: { name: "XML", mode: "application/xml" }
         };
 
-        // Элементы
         const langSelect = document.getElementById("langSelect");
         const themeSelect = document.getElementById("themeSelect");
         const statusLang = document.getElementById("statusLang");
         const statusLines = document.getElementById("statusLines");
         const statusChars = document.getElementById("statusChars");
 
-        // Обновление статуса
         function updateStatus() {
             const lines = editor.lineCount();
             const chars = editor.getValue().length;
@@ -212,31 +143,24 @@
         }
         editor.on("change", updateStatus);
 
-        // Смена языка
         langSelect.addEventListener("change", () => {
             const mode = langMap[langSelect.value].mode;
             editor.setOption("mode", mode);
             updateStatus();
         });
 
-        // Смена темы
         themeSelect.addEventListener("change", () => {
             const theme = themeSelect.value;
             editor.setOption("theme", theme);
             document.body.className = theme === "eclipse" ? "theme-light" : "";
         });
 
-        // Кнопки
         document.getElementById("newFile").addEventListener("click", () => {
-            if (confirm("Создать новый файл? Текущий код будет потерян.")) {
-                editor.setValue("");
-            }
+            if (confirm("Создать новый файл?")) editor.setValue("");
         });
 
         document.getElementById("copyBtn").addEventListener("click", () => {
-            navigator.clipboard.writeText(editor.getValue()).then(() => {
-                tg.showAlert("Код скопирован в буфер обмена!");
-            });
+            navigator.clipboard.writeText(editor.getValue()).then(() => tg.showAlert("Скопировано!"));
         });
 
         document.getElementById("downloadBtn").addEventListener("click", () => {
@@ -250,51 +174,41 @@
         });
 
         function getFileExtension() {
-            const lang = langSelect.value;
-            const exts = {
-                javascript: "js", python: "py", htmlmixed: "html", css: "css",
-                java: "java", cpp: "cpp", csharp: "cs", php: "php",
-                sql: "sql", go: "go", rust: "rs", shell: "sh", xml: "xml"
-            };
-            return exts[lang] || "txt";
+            const exts = { javascript: "js", python: "py", htmlmixed: "html", css: "css", java: "java", cpp: "cpp", csharp: "cs", php: "php", sql: "sql", go: "go", rust: "rs", shell: "sh", xml: "xml" };
+            return exts[langSelect.value] || "txt";
         }
 
         function saveCode() {
-            const data = {
-                code: editor.getValue(),
-                language: langSelect.value,
-                filename: `code.${getFileExtension()}`
-            };
+            const data = { code: editor.getValue(), language: langSelect.value, filename: `code.${getFileExtension()}` };
             tg.sendData(JSON.stringify(data));
             tg.close();
         }
-
         document.getElementById("saveBtn").addEventListener("click", saveCode);
 
         document.getElementById("undoBtn").addEventListener("click", () => editor.undo());
         document.getElementById("redoBtn").addEventListener("click", () => editor.redo());
-        document.getElementById("searchBtn").addEventListener("click", () => {
-            CodeMirror.commands.findPersistent(editor);
+        document.getElementById("searchBtn").addEventListener("click", () => CodeMirror.commands.findPersistent(editor));
+
+        // === ОБРАБОТКА start_param ===
+        document.addEventListener("DOMContentLoaded", () => {
+            const initData = tg.initDataUnsafe;
+            if (initData && initData.start_param) {
+                try {
+                    const decoded = decodeURIComponent(initData.start_param);
+                    const param = JSON.parse(decoded);
+                    if (param.code) editor.setValue(param.code);
+                    if (param.lang && langMap[param.lang]) {
+                        langSelect.value = param.lang;
+                        editor.setOption("mode", langMap[param.lang].mode);
+                    }
+                    updateStatus();
+                } catch (e) {
+                    console.error("Ошибка start_param:", e);
+                }
+            }
         });
 
-        // Загрузка кода при открытии (если передан через start_param)
-        const initData = tg.initDataUnsafe;
-        if (initData.start_param) {
-            try {
-                const param = JSON.parse(decodeURIComponent(initData.start_param));
-                if (param.code) editor.setValue(param.code);
-                if (param.lang && langMap[param.lang]) {
-                    langSelect.value = param.lang;
-                    editor.setOption("mode", langMap[param.lang].mode);
-                }
-            } catch (e) {
-                console.log("Нет начального кода");
-            }
-        }
-
-        // Инициализация
         updateStatus();
     </script>
 </body>
-
 </html>
